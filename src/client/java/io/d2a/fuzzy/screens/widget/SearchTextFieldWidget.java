@@ -7,6 +7,8 @@ import io.d2a.fuzzy.util.actions.ShiftAction;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.navigation.NavigationDirection;
 import net.minecraft.client.gui.widget.TextFieldWidget;
+import net.minecraft.client.input.CharInput;
+import net.minecraft.client.input.KeyInput;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
@@ -31,9 +33,11 @@ public class SearchTextFieldWidget extends TextFieldWidget {
     }
 
     @Override
-    public boolean charTyped(char chr, int modifiers) {
+    public boolean charTyped(CharInput input) {
+        var modifiers = input.modifiers();
+        var chr = input.codepoint();
         if (FuzzyClient.getConfig().enableShiftActions() && (modifiers & GLFW.GLFW_MOD_SHIFT) == GLFW.GLFW_MOD_SHIFT) {
-            final ShiftAction action = ShiftAction.fromKeyCode(chr);
+            final ShiftAction action = ShiftAction.fromKeyCode((char) chr);
             if (action != null) {
                 // get selected entry
                 final ResultEntry entry = this.fuzzyCommandScreen.getResultListWidget().getSelectedOrNull();
@@ -46,11 +50,14 @@ public class SearchTextFieldWidget extends TextFieldWidget {
                 return true;
             }
         }
-        return super.charTyped(chr, modifiers);
+        return super.charTyped(input);
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
+    public boolean keyPressed(KeyInput input) {
+        var keyCode = input.key();
+        var scanCode = input.scancode();
+        var modifiers = input.modifiers();
         // update shift state
         this.isShiftDown = (modifiers & GLFW.GLFW_MOD_SHIFT) == GLFW.GLFW_MOD_SHIFT;
 
@@ -79,14 +86,17 @@ public class SearchTextFieldWidget extends TextFieldWidget {
         }
 
         // default
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(input);
     }
 
     @Override
-    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
+    public boolean keyReleased(KeyInput input) {
+        var keyCode = input.key();
+        var scanCode = input.scancode();
+        var modifiers = input.modifiers();
         // update shift state
         this.isShiftDown = (modifiers & GLFW.GLFW_MOD_SHIFT) == GLFW.GLFW_MOD_SHIFT;
-        return super.keyReleased(keyCode, scanCode, modifiers);
+        return super.keyReleased(input);
     }
 
     public void setResultConsumer(BiConsumer<SearchResult, ResultEntry> resultConsumer) {

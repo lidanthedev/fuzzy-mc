@@ -27,10 +27,10 @@ public class ResultEntry extends AlwaysSelectedEntryListWidget.Entry<ResultEntry
     }
 
     @Override
-    public void render(DrawContext context, int index, int y, int x, int entryWidth, int entryHeight, int mouseX, int mouseY, boolean hovered, float tickDelta) {
+    public void render(DrawContext context, int mouseX, int mouseY, boolean hovered, float deltaTicks) {
         final String commandPrefix = this.command.type().getPrefix();
         final int commandPrefixWidth = this.textRenderer.getWidth(commandPrefix);
-        context.drawText(this.textRenderer, commandPrefix, x, y + 1, Color.GRAY.getRGB(), false);
+        context.drawText(this.textRenderer, commandPrefix, getX(), getY() + 1, Color.GRAY.getRGB(), false);
 
         final String score = String.valueOf(this.score);
         final int scoreWidth = this.textRenderer.getWidth(score);
@@ -44,7 +44,7 @@ public class ResultEntry extends AlwaysSelectedEntryListWidget.Entry<ResultEntry
         }
 
         // build command preview
-        final int maxCommandPreviewLength = entryWidth - 1 - commandPrefixWidth - 1 - scoreWidth;
+        final int maxCommandPreviewLength = getWidth() - 1 - commandPrefixWidth - 1 - scoreWidth;
         boolean truncated = false;
         String commandPreview = this.command.command();
         while (this.textRenderer.getWidth(commandPreview) > maxCommandPreviewLength) {
@@ -57,8 +57,8 @@ public class ResultEntry extends AlwaysSelectedEntryListWidget.Entry<ResultEntry
         context.drawText(
                 this.textRenderer,
                 commandPreview,
-                x + commandPrefixWidth,
-                y + 1,
+                getX() + commandPrefixWidth,
+                getY() + 1,
                 this.command.type().getRgb(),
                 true
         );
@@ -67,8 +67,8 @@ public class ResultEntry extends AlwaysSelectedEntryListWidget.Entry<ResultEntry
             context.drawText(
                     this.textRenderer,
                     score,
-                    x + entryWidth - scoreWidth - 4,
-                    y + 1,
+                    getX() + getWidth() - scoreWidth - 4,
+                    getY() + 1,
                     scoreColor.getRGB(),
                     true
             );

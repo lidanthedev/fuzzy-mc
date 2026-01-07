@@ -15,6 +15,7 @@ import me.xdrop.fuzzywuzzy.FuzzySearch;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Element;
 import net.minecraft.client.gui.navigation.GuiNavigation;
@@ -26,6 +27,8 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.awt.*;
 import java.util.ArrayList;
@@ -36,6 +39,7 @@ import java.util.function.BiConsumer;
 @Environment(EnvType.CLIENT)
 public class FuzzyCommandScreen extends Screen {
 
+    private static final Logger log = LoggerFactory.getLogger(FuzzyCommandScreen.class);
     private final Screen parent;
 
     public FuzzyCommandScreen(final Screen parent) {
@@ -113,6 +117,7 @@ public class FuzzyCommandScreen extends Screen {
         if (!(FuzzyClient.getConfig() instanceof DefaultFuzzyConfig)) {
             buttons.add(ButtonWidget.builder(
                             Text.translatable("text.fuzzy.button-config"), button -> {
+                                log.info("Opening configuration screen...");
                                 final Screen configScreen = AutoConfig.getConfigScreen(
                                         ClothFuzzyConfig.class,
                                         super.client.currentScreen
@@ -234,9 +239,10 @@ public class FuzzyCommandScreen extends Screen {
         this.previousSearch = text;
 
         // clear any remaining children
-        this.resultListWidget.children().clear();
+        this.resultListWidget.replaceEntries(new ArrayList<>());
 
         // fuzzy search in commands
+        List<ResultEntry> children = new ArrayList<>(this.resultListWidget.children());
         if (!text.isEmpty()) {
             FuzzySearch.extractTop(
                             text,
@@ -246,7 +252,7 @@ public class FuzzyCommandScreen extends Screen {
                             FuzzyClient.getConfig().fuzzySearchCutoff()
                     )
                     .forEach(command ->
-                            resultListWidget.children().add(new ResultEntry(
+                            children.add(new ResultEntry(
                                     super.textRenderer,
                                     command.getReferent(),
                                     command.getScore()
@@ -255,13 +261,14 @@ public class FuzzyCommandScreen extends Screen {
         } else {
             FuzzyClient.SENT_COMMANDS
                     .forEach(command ->
-                            resultListWidget.children().addFirst(new ResultEntry(
+                            children.addFirst(new ResultEntry(
                                     super.textRenderer,
                                     command,
                                     -1
                             ))
                     );
         }
+        this.resultListWidget.replaceEntries(children);
 
         // select first children
         if (!resultListWidget.children().isEmpty()) {
@@ -302,7 +309,7 @@ public class FuzzyCommandScreen extends Screen {
 
     public void suggest() {
         this.check((client, entry) -> {
-            final ChatScreen chatScreen = new ChatScreen(Command.Type.CHAT.transform(entry.toString()));
+            final ChatScreen chatScreen = new ChatScreen(Command.Type.CHAT.transform(entry.toString()), false);
             client.setScreen(chatScreen);
         }, false);
     }
@@ -347,17 +354,18 @@ public class FuzzyCommandScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (this.resultListWidget.isMouseOver(mouseX, mouseY)
-                && this.onResultListClicked(mouseY, button)) {
+    public boolean mouseClicked(Click click, boolean doubled) {
+        if (this.resultListWidget.isMouseOver(click.x(), click.y())
+                && this.onResultListClicked(click.y(), click.button())) {
             return true;
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+
+        return super.mouseClicked(click, doubled);
     }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        if (hasControlDown()) {
+        if (MinecraftClient.getInstance().options.sneakKey.isPressed()) {
             if (verticalAmount > 0) {
                 resultListWidget.selectNextEntryInDirection(NavigationDirection.UP);
             } else {

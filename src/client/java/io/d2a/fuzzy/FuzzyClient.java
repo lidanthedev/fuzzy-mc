@@ -20,6 +20,7 @@ import net.minecraft.client.util.CommandHistoryManager;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 import java.awt.*;
@@ -30,6 +31,8 @@ import java.util.stream.Stream;
 public class FuzzyClient implements ClientModInitializer {
 
     public static final Set<Command> SENT_COMMANDS = new LinkedHashSet<>();
+    public static final String NAMESPACE = "fuzzy";
+    private static final KeyBinding.Category FUZZY_CATEGORY = KeyBinding.Category.create(Identifier.of(NAMESPACE, "gamma"));
 
     // Config
     private static final FuzzyConfig config;
@@ -51,7 +54,7 @@ public class FuzzyClient implements ClientModInitializer {
                 "key.fuzzy.open",
                 InputUtil.Type.KEYSYM,
                 GLFW.GLFW_KEY_J,
-                "category.fuzzy.menu"
+                FUZZY_CATEGORY
         ));
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
