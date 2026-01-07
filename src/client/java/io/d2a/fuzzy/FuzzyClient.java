@@ -32,7 +32,7 @@ public class FuzzyClient implements ClientModInitializer {
 
     public static final Set<Command> SENT_COMMANDS = new LinkedHashSet<>();
     public static final String NAMESPACE = "fuzzy";
-    private static final KeyBinding.Category FUZZY_CATEGORY = KeyBinding.Category.create(Identifier.of(NAMESPACE, "gamma"));
+    private static final KeyBinding.Category FUZZY_CATEGORY = KeyBinding.Category.create(Identifier.of(NAMESPACE, "fuzzy"));
 
     // Config
     private static final FuzzyConfig config;
